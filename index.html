@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Tiket Penerbangan</title>
+    <style>
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7fb; color: #333; line-height: 1.6; }
+
+        /* NAVBAR */
+        header { background: #0052a3; color: white; padding: 15px 5%; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+        .logo { font-size: 22px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        nav a { color: white; text-decoration: none; margin-left: 20px; font-size: 15px; font-weight: 500; transition: opacity 0.2s; }
+        nav a:hover { opacity: 0.8; }
+
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(rgba(0, 38, 77, 0.7), rgba(0, 38, 77, 0.7)), 
+                        url('https://images.unsplash.com/photo-1542296332-2e4473faf563?auto=format&fit=crop&w=1400&q=80') center/cover;
+            color: white;
+            text-align: center;
+            padding: 100px 20px;
+        }
+        .hero h1 { font-size: 40px; margin: 0 0 15px; }
+        .hero p { font-size: 18px; max-width: 650px; margin: 0 auto 30px; color: #e0ecff; }
+        .btn-cta { background: #ff6600; color: white; padding: 14px 30px; text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 16px; display: inline-block; transition: background 0.3s; }
+        .btn-cta:hover { background: #e65c00; }
+
+        /* CONTAINER UMUM */
+        .section { max-width: 1100px; margin: 60px auto; padding: 0 20px; }
+        .section-header { text-align: center; margin-bottom: 40px; }
+        .section-header h2 { color: #0052a3; font-size: 28px; margin-bottom: 10px; }
+        .section-header p { color: #666; margin: 0; }
+
+        /* JADWAL PENERBANGAN (KATALOG KARTU) */
+        .flight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .flight-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.2s; display: flex; flex-direction: column; }
+        .flight-card:hover { transform: translateY(-5px); }
+        .flight-img { width: 100%; height: 180px; object-fit: cover; }
+        .flight-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .badge { background: #e6f2ff; color: #0066cc; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; width: fit-content; margin-bottom: 10px; }
+        .route { font-size: 20px; font-weight: bold; margin: 5px 0; color: #222; }
+        .details { font-size: 14px; color: #666; margin: 10px 0; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; }
+        .price { font-size: 18px; font-weight: bold; color: #ff6600; }
+        .btn-book { background: #0066cc; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .btn-book:hover { background: #004c99; }
+        .btn-pay { background: #198754; color: white; border: none; padding: 12px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
+        .btn-pay:hover { background: #146c43; }
+        .btn-cancel { background: #e9ecef; color: #333; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 8px; }
+        .btn-cancel:hover { background: #dde2e6; }
+
+        /* KEUNGGULAN */
+        .features { background: white; padding: 60px 20px; }
+        .feature-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; text-align: center; }
+        .feature-item { padding: 20px; }
+        .feature-icon { font-size: 40px; margin-bottom: 15px; }
+
+        /* FOOTER */
+        footer { background: #0d1b2a; color: #b0c4de; padding: 40px 5% 20px; margin-top: 60px; }
+        .footer-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px; }
+        footer h4 { color: white; margin-top: 0; }
+        .footer-bottom { text-align: center; border-top: 1px solid #1b263b; padding-top: 20px; font-size: 13px; }
+
+        /* MODAL POPUP PEMBAYARAN & E-TIKET */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+        .modal-content { background: white; padding: 28px; border-radius: 12px; max-width: 450px; width: 100%; box-shadow: 0 8px 25px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+        .summary-box { background: #f4f7fb; border-left: 4px solid #0066cc; padding: 14px; border-radius: 6px; margin: 15px 0; text-align: left; }
+        .summary-box p { margin: 4px 0; font-size: 14px; }
+        .ticket-box { background: #f0f7ff; border: 1px dashed #0066cc; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: left; }
+        .ticket-box p { margin: 5px 0; font-size: 14px; }
+
+        .payment-option { display: flex; align-items: center; gap: 10px; border: 1px solid #d0d7de; padding: 12px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; text-align: left; transition: border-color 0.2s, background 0.2s; }
+        .payment-option:hover { border-color: #0066cc; background: #f8fbff; }
+        .payment-option input { margin: 0; accent-color: #0066cc; }
+        .payment-info { background: #fff8e6; border: 1px solid #ffe082; padding: 12px; border-radius: 8px; font-size: 13px; text-align: left; margin-bottom: 15px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. HEADER & NAVIGASI -->
+    <header>
+        <div class="logo">✈️Tiket Penerbangan Indonesia</div>
+        <nav>
+            <a href="#beranda">Beranda</a>
+            <a href="#jadwal">Jadwal & Promo</a>
+            <a href="#layanan">Layanan</a>
+            <a href="#kontak">Kontak</a>
+        </nav>
+    </header>
+
+    <!-- 2. HERO BANNER -->
+    <section id="beranda" class="hero">
+        <h1>Jelajahi Dunia Lebih Mudah & Nyaman</h1>
+        <p>Temukan penawaran tiket pesawat terbaik ke berbagai destinasi impian domestik maupun internasional dalam satu klik.</p>
+        <a href="#jadwal" class="btn-cta">Lihat Jadwal Penerbangan</a>
+    </section>
+
+    <!-- 3. KATALOG JADWAL & RUTE POPULER -->
+    <section id="jadwal" class="section">
+        <div class="section-header">
+            <h2>Jadwal & Promo Penerbangan Hari Ini</h2>
+            <p>Pilih rute penerbangan yang tersedia dan lanjutkan ke pembayaran instan</p>
+        </div>
+
+        <div class="flight-grid">
+            <!-- Kartu 1 -->
+            <div class="flight-card">
+                <img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=600&q=80" alt="Bali" class="flight-img">
+                <div class="flight-body">
+                    <div>
+                        <span class="badge">Garuda Indonesia • Langsung</span>
+                        <div class="route">Jakarta (CGK) ➔ Bali (DPS)</div>
+                        <div class="details">📅 Keberangkatan: Besok, 08:30 WIB<br>💺 Kelas Ekonomi • Bagasi 20kg</div>
+                    </div>
+                    <div class="price-row">
+                        <span class="price">Rp 950.000</span>
+                        <button class="btn-book" onclick="bukaPembayaran('Jakarta (CGK) ➔ Bali (DPS)', 'Garuda Indonesia', 'Rp 950.000')">Pesan Tiket</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kartu 2 -->
+            <div class="flight-card">
+                <img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=600&q=80" alt="Singapore" class="flight-img">
+                <div class="flight-body">
+                    <div>
+                        <span class="badge">Singapore Airlines • Langsung</span>
+                        <div class="route">Surabaya (SUB) ➔ Singapore (SIN)</div>
+                        <div class="details">📅 Keberangkatan: Besok, 10:15 WIB<br>💺 Kelas Ekonomi • Bagasi 25kg</div>
+                    </div>
+                    <div class="price-row">
+                        <span class="price">Rp 1.350.000</span>
+                        <button class="btn-book" onclick="bukaPembayaran('Surabaya (SUB) ➔ Singapore (SIN)', 'Singapore Airlines', 'Rp 1.350.000')">Pesan Tiket</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kartu 3 -->
+            <div class="flight-card">
+                <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80" alt="Tokyo" class="flight-img">
+                <div class="flight-body">
+                    <div>
+                        <span class="badge">ANA Airways • Promo</span>
+                        <div class="route">Bali (DPS) ➔ Tokyo (HND)</div>
+                        <div class="details">📅 Keberangkatan: Minggu Ini, 23:45 WITA<br>💺 Kelas Ekonomi • Bagasi 30kg</div>
+                    </div>
+                    <div class="price-row">
+                        <span class="price">Rp 5.200.000</span>
+                        <button class="btn-book" onclick="bukaPembayaran('Bali (DPS) ➔ Tokyo (HND)', 'ANA Airways', 'Rp 5.200.000')">Pesan Tiket</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. KEUNGGULAN LAYANAN -->
+    <section id="layanan" class="features">
+        <div class="section-header">
+            <h2>Kenapa Terbang Bersama Kami?</h2>
+            <p>Kenyamanan dan keamanan perjalanan Anda adalah prioritas utama</p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <div class="feature-icon">🛡️</div>
+                <h3>Jaminan Harga Resmi</h3>
+                <p>Harga langsung dari maskapai tanpa biaya tambahan tersembunyi.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">⚡</div>
+                <h3>Booking & Bayar Cepat</h3>
+                <p>Pilih jadwal, tentukan metode pembayaran, dan terima e-tiket secara instan.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🎧</div>
+                <h3>Dukungan 24 Jam</h3>
+                <p>Bantuan reschedule dan refund cepat kapan pun Anda butuhkan.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. FOOTER -->
+    <footer id="kontak">
+        <div class="footer-grid">
+            <div>
+                <h4>✈️ SkyWay Indonesia</h4>
+                <p>Portal informasi jadwal dan pemesanan tiket penerbangan domestik serta mancanegara.</p>
+            </div>
+            <div>
+                <h4>Navigasi</h4>
+                <p>Beranda<br>Jadwal Penerbangan<br>Promo Maskapai</p>
+            </div>
+            <div>
+                <h4>Hubungi Kami</h4>
+                <p>Email: cs@skyway.id<br>Call Center: 1500-999<br>Jakarta, Indonesia</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 SkyWay Indonesia. Seluruh Hak Cipta Dilindungi.
+        </div>
+    </footer>
+
+    <!-- MODAL PEMBAYARAN & E-TIKET -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <!-- TAHAP 1: HALAMAN PEMBAYARAN -->
+            <div id="paymentStep">
+                <h3 style="color:#0052a3; margin-top:0; text-align:center;">💳 Pembayaran Tiket</h3>
+
+                <div class="summary-box">
+                    <p><strong>Rute:</strong> <span id="payRute"></span></p>
+                    <p><strong>Maskapai:</strong> <span id="payMaskapai"></span></p>
+                    <p><strong>Total Bayar:</strong> <span id="payHarga" style="color:#ff6600; font-weight:bold;"></span></p>
+                </div>
+
+                <p style="font-weight:bold; margin-bottom:8px; font-size:14px;">Pilih Metode Pembayaran:</p>
+                <div>
+                    <label class="payment-option">
+                        <input type="radio" name="metodeBayar" value="Transfer Bank (VA BCA / Mandiri)" checked onchange="updateInfoBayar()">
+                        <span>🏦 Transfer Bank / Virtual Account</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="metodeBayar" value="E-Wallet (GoPay / OVO / DANA)" onchange="updateInfoBayar()">
+                        <span>📱 E-Wallet (GoPay / OVO / DANA)</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="metodeBayar" value="Kartu Kredit / Debit" onchange="updateInfoBayar()">
+                        <span>💳 Kartu Kredit / Debit</span>
+                    </label>
+                </div>
+
+                <div id="paymentInfoBox" class="payment-info">
+                    No. Virtual Account: <strong>8801 0812 3456 7890</strong><br>
+                    a.n. PT SkyWay Indonesia
+                </div>
+
+                <button class="btn-pay" onclick="prosesPembayaran()">Konfirmasi & Bayar Sekarang</button>
+                <button class="btn-cancel" onclick="tutupModal()">Batal</button>
+            </div>
+
+            <!-- TAHAP 2: E-TIKET SETELAH BAYAR -->
+            <div id="ticketStep" class="hidden" style="text-align:center;">
+                <h3 style="color:#198754; margin-top:0;">🎉 Pembayaran Berhasil!</h3>
+                <p style="font-size:14px; color:#555; margin-top:0;">E-Tiket Anda sudah aktif dan siap digunakan.</p>
+
+                <div class="ticket-box">
+                    <p><strong>Kode Booking:</strong> <span id="modalKode"></span></p>
+                    <p><strong>Rute:</strong> <span id="modalRute"></span></p>
+                    <p><strong>Maskapai:</strong> <span id="modalMaskapai"></span></p>
+                    <p><strong>Metode Bayar:</strong> <span id="modalMetode"></span></p>
+                    <p><strong>Total Dibayar:</strong> <span id="modalHarga"></span></p>
+                </div>
+
+                <button class="btn-book" style="width:100%;" onclick="tutupModal()">Selesai</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dataPesanan = {};
+
+        function bukaPembayaran(rute, maskapai, harga) {
+            dataPesanan = { rute, maskapai, harga };
+
+            document.getElementById('payRute').innerText = rute;
+            document.getElementById('payMaskapai').innerText = maskapai;
+            document.getElementById('payHarga').innerText = harga;
+
+            document.getElementById('paymentStep').classList.remove('hidden');
+            document.getElementById('ticketStep').classList.add('hidden');
+
+            document.querySelector('input[name="metodeBayar"]').checked = true;
+            updateInfoBayar();
+
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+
+        function updateInfoBayar() {
+            const metode = document.querySelector('input[name="metodeBayar"]:checked').value;
+            const infoBox = document.getElementById('paymentInfoBox');
+
+            if (metode.includes('Transfer Bank')) {
+                infoBox.innerHTML = 'No. Virtual Account: <strong>8801 0812 3456 7890</strong><br>a.n. PT SkyWay Indonesia';
+            } else if (metode.includes('E-Wallet')) {
+                infoBox.innerHTML = 'Kirim pembayaran ke nomor GoPay / OVO / DANA: <strong>0812-3456-7890</strong><br>a.n. PT SkyWay Indonesia';
+            } else {
+                infoBox.innerHTML = 'Pembayaran Kartu Kredit / Debit akan diproses secara otomatis dan aman (3D Secure).';
+            }
+        }
+
+        function prosesPembayaran() {
+            const metode = document.querySelector('input[name="metodeBayar"]:checked').value;
+            const kodeBooking = 'SKY-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            document.getElementById('modalKode').innerText = kodeBooking;
+            document.getElementById('modalRute').innerText = dataPesanan.rute;
+            document.getElementById('modalMaskapai').innerText = dataPesanan.maskapai;
+            document.getElementById('modalMetode').innerText = metode;
+            document.getElementById('modalHarga').innerText = dataPesanan.harga;
+
+            document.getElementById('paymentStep').classList.add('hidden');
+            document.getElementById('ticketStep').classList.remove('hidden');
+        }
+
+        function tutupModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('paymentModal');
+            if (event.target === modal) {
+                tutupModal();
+            }
+        };
+    </script>
+</body>
+</html>
